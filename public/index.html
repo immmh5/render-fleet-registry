@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🚀 Render Fleet — لوحة التحكم</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+<style>
+  :root {
+    --bg: #0b1020; --card: #141a2e; --border: #252d47;
+    --text: #e8ecf8; --muted: #8b94b5;
+    --blue: #4d9fff; --green: #34d399; --red: #f87171; --yellow: #fbbf24; --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Segoe UI', Tahoma, system-ui, sans-serif; line-height: 1.5;
+  }
+  .hidden { display: none !important; }
+
+  .login {
+    max-width: 420px; margin: 12vh auto; padding: 32px; text-align: center;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  }
+  .login h1 { margin: 0 0 6px; }
+  .login p { color: var(--muted); font-size: 14px; }
+  .login input {
+    width: 100%; padding: 12px; margin-top: 14px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text); direction: ltr;
+  }
+  .login button, .btn {
+    margin-top: 12px; padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer;
+    background: var(--blue); color: #fff; font-weight: 600; font-size: 14px;
+  }
+
+  header {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 20px 24px 12px; max-width: 1280px; margin: 0 auto;
+  }
+  header h1 { margin: 0; font-size: 22px; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .h-actions { display: flex; gap: 8px; }
+  .btn { padding: 8px 14px; margin: 0; font-size: 13px; }
+  .btn.ghost { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  .btn.danger { background: #3a1d24; border: 1px solid #5c2c36; color: var(--red); }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 8px 24px 40px; }
+
+  .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin: 14px 0 22px; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .stat .num { font-size: 26px; font-weight: 700; line-height: 1.1; }
+  .stat .lbl { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+  section.panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; }
+  section.panel > h2 { margin: 0 0 14px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  section.panel > h2 .count { color: var(--muted); font-weight: 400; font-size: 13px; }
+
+  .alert {
+    display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid; margin-bottom: 8px; font-size: 13.5px;
+  }
+  .alert.warn { background: rgba(251,191,36,.08); border-color: rgba(251,191,36,.35); color: #fde9ad; }
+  .alert.err  { background: rgba(248,113,113,.08); border-color: rgba(248,113,113,.35); color: #fecaca; }
+  .alert.info { background: rgba(77,159,255,.08); border-color: rgba(77,159,255,.35); color: #cfe4ff; }
+  .alert .tag { font-weight: 700; white-space: nowrap; }
+  .alert.ok, .none { color: var(--muted); font-size: 13px; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  .toolbar input {
+    flex: 1; min-width: 220px; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  }
+  .toolbar .cfg { color: var(--muted); font-size: 13px; background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 10px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: right; color: var(--muted); font-weight: 600; font-size: 12px; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 10px; border-bottom: 1px solid rgba(37,45,71,.55); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .mono { font-family: ui-monospace, Menlo, Consolas, monospace; direction: ltr; text-align: left; }
+  .ts { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .note { color: var(--muted); font-size: 12.5px; max-width: 230px; }
+
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+  .p-live  { background: rgba(52,211,153,.14); color: var(--green); }
+  .p-deploying, .p-created { background: rgba(77,159,255,.14); color: var(--blue); }
+  .p-susp  { background: rgba(248,113,113,.14); color: var(--red); }
+  .p-other { background: rgba(139,148,181,.14); color: var(--muted); }
+  .tag-pill { display: inline-block; padding: 1px 9px; border-radius: 6px; font-size: 11px; background: rgba(167,139,250,.16); color: var(--purple); margin-bottom: 4px; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; margin-left: 6px; }
+  .b-ok   { background: rgba(52,211,153,.14); color: var(--green); }
+  .b-warn { background: rgba(251,191,36,.14); color: var(--yellow); }
+  .b-bad  { background: rgba(248,113,113,.14); color: var(--red); }
+  .b-info { background: rgba(77,159,255,.14); color: var(--blue); }
+  .dom { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 1px 8px; font-size: 12px; margin: 1px; }
+  a.dom { color: var(--blue); text-decoration: none; direction: ltr; }
+  a.dom:hover { text-decoration: underline; }
+  .link { color: var(--blue); text-decoration: none; font-size: 12.5px; }
+  .link:hover { text-decoration: underline; }
+
+  .account { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; background: rgba(20,26,46,.6); }
+  .acct-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+  .name { font-size: 16px; font-weight: 700; }
+  .meta { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .acct-right { text-align: left; }
+  .bar { height: 6px; border-radius: 4px; background: var(--bg); overflow: hidden; margin-top: 6px; }
+  .bar > div { height: 100%; background: var(--blue); }
+  .bar > div.free { background: var(--green); }
+  .bar > div.warn { background: var(--yellow); }
+  .bar > div.full { background: var(--red); }
+  .acct-note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .cfg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .cfg-item label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+  .cfg-item input, .cfg-item select {
+    width: 100%; padding: 9px 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 13.5px;
+  }
+  .cfg-actions { display: flex; gap: 8px; margin-top: 16px; align-items: center; }
+  .err { color: var(--red); font-size: 13px; padding: 8px 14px; border-radius: 8px; background: rgba(248,113,113,.08); }
+  .ok  { color: var(--green); font-size: 13px; padding: 8px 14px; border-radius: 8px; background: rgba(52,211,153,.08); }
+
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(3, 1fr); }
+    .cfg-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <h1>🚀 Render Fleet</h1>
+  <p>أدخل مفتاح الـ Registry (REGISTRY_API_KEY) لعرض كل المشاريع على كل الحسابات.</p>
+  <input type="password" id="key" placeholder="الصق المفتاح هنا" autofocus>
+  <button id="go">دخول</button>
+  <div id="loginErr" class="err hidden" style="margin-top:12px"></div>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div>
+      <h1>🚀 Render Fleet <span style="color:var(--muted);font-size:15px">— لوحة التحكم</span></h1>
+      <div class="sub" id="updated"></div>
+    </div>
+    <div class="h-actions">
+      <button class="btn ghost" id="refresh">🔄 تحديث</button>
+      <button class="btn danger" id="logout">خروج</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats" id="stats"></div>
+
+    <section class="panel" id="alertsPanel">
+      <h2>⚠️ التنبيهات <span class="count" id="alertCount"></span></h2>
+      <div id="alerts"></div>
+    </section>
+
+    <section class="panel" id="projectsPanel">
+      <h2>📦 المشاريع <span class="count" id="projectCount"></span></h2>
+      <div class="toolbar">
+        <input id="q" placeholder="🔍 ابحث بالاسم، الفئة، الملاحظة، الحساب، أو الدومين…">
+        <span class="cfg" id="cfgChip"></span>
+      </div>
+      <table>
+        <thead><tr>
+          <th>المشروع</th><th>الفئة</th><th>الحالة</th><th>الحساب</th>
+          <th>الدومينات</th><th>الرابط / GitHub</th><th>ملاحظة</th><th>أُنشئ في</th>
+        </tr></thead>
+        <tbody id="projects"></tbody>
+      </table>
+    </section>
+
+    <section class="panel" id="accountsPanel">
+      <h2>🏦 الحسابات <span class="count" id="accountCount"></span></h2>
+      <div id="accounts"></div>
+    </section>
+
+    <section class="panel" id="configPanel">
+      <h2>⚙️ الإعدادات</h2>
+      <div class="cfg-grid">
+        <div class="cfg-item">
+          <label>استراتيجية التوزيع</label>
+          <select id="cfgStrategy"></select>
+        </div>
+        <div class="cfg-item">
+          <label>الحد الأقصى للمشاريع لكل حساب</label>
+          <input type="number" id="cfgMax" min="0">
+        </div>
+        <div class="cfg-item">
+          <label>الحد الأقصى للدومينات لكل حساب</label>
+          <input type="number" id="cfgDomains" min="0">
+        </div>
+        <div class="cfg-item">
+          <label>عرض النطاق المتوقع (GB/شهر لكل حساب)</label>
+          <input type="number" id="cfgBw" min="0">
+        </div>
+      </div>
+      <div class="cfg-actions">
+        <button class="btn" id="saveCfg">💾 حفظ</button>
+        <button class="btn ghost" id="resetCfg">↺ إعادة الافتراضي</button>
+        <div id="cfgMsg"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const KEY = 'render_fleet_key_v1';
+const STRATEGY_LABELS = {
+  one_per_account: 'مشروع واحد لكل حساب',
+  two_per_account: 'مشروعان لكل حساب (الافتراضي)',
+  load_balanced: 'توازن التحميل',
+  auto: 'تلقائي'
+};
+let token = localStorage.getItem(KEY) || '';
+let DATA = null;
+let filter = '';
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('ar-SA', {year:'numeric', month:'short', day:'numeric'}); }
+  catch { return iso; }
+}
+function ghUrl(meta, repo) {
+  const r = meta && (meta.repo || meta.github || repo);
+  if (!r) return null;
+  return /^https?:\/\//.test(r) ? r : 'https://github.com/' + r.replace(/^github\.com\//, '');
+}
+function statusPill(svc) {
+  if (svc.suspended) {
+    const why = (svc.suspenders && svc.suspenders.length) ? svc.suspenders.join(', ') : 'unknown';
+    return '<span class="pill p-susp">معطّل (' + esc(why) + ')</span>';
+  }
+  const st = svc.status || 'unknown';
+  const cls = st === 'live' ? 'p-live' : (['deploying','created'].includes(st) ? 'p-deploying' : 'p-other');
+  return '<span class="pill ' + cls + '">' + esc(st) + '</span>';
+}
+function domainsHtml(svc) {
+  if (!svc.customDomains || !svc.customDomains.length) return '<span class="none">—</span>';
+  return svc.customDomains.map(d =>
+    '<span class="dom"><a href="https://' + esc(d.domain) + '" target="_blank">' + esc(d.domain) + '</a></span>'
+  ).join('') + (svc.url && !svc.customDomains.length ? '<div><a class="link" href="' + esc(svc.url) + '" target="_blank">' + esc((svc.url||'').replace(/^https?:\/\//,'')) + '</a></div>' : '');
+}
+function svcLink(svc) {
+  return 'https://dashboard.render.com/web/' + encodeURIComponent(svc.id) + '/deploys';
+}
+
+async function load() {
+  const [fleet, alerts] = await Promise.all([
+    fetch('/api/fleet', { headers: { Authorization: 'Bearer ' + token } }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }),
+    fetch('/api/alerts', { headers: { Authorization: 'Bearer ' + token } }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  ]);
+  DATA = { ...fleet, alerts: alerts.alerts || [] };
+  return DATA;
+}
+
+/* ---------- Sections ---------- */
+function renderStats() {
+  const t = DATA.totals;
+  const live = t.services - t.suspended;
+  const bwUsed = DATA.accounts.reduce((n, a) => n + (a.bandwidthAllocatedGb || 0), 0);
+  document.getElementById('stats').innerHTML = [
+    ['<span style="color:var(--blue)">' + t.services + '</span>', 'إجمالي المشاريع'],
+    ['<span style="color:var(--green)">' + live + '</span>', 'مشاريع تعمل'],
+    ['<span style="color:var(--red)">' + t.suspended + '</span>', 'معطّلة'],
+    ['<span style="color:var(--yellow)">' + t.customDomainsUsed + '/' + (t.customDomainsLimit == null ? '—' : t.customDomainsLimit) + '</span>', 'دومينات مستخدمة'],
+    ['<span style="color:var(--purple)">' + bwUsed + '/' + (t.bandwidthLimitGb || '—') + ' GB</span>', 'عرض نطاق مُقدَّر'],
+    ['<span style="color:var(--text)">' + DATA.accountCount + '</span>', 'حسابات']
+  ].map(([n, l]) => '<div class="stat"><div class="num">' + n + '</div><div class="lbl">' + l + '</div></div>').join('');
+}
+
+function renderAlerts() {
+  const list = DATA.alerts || [];
+  const box = document.getElementById('alerts');
+  document.getElementById('alertCount').textContent = list.length ? '(' + list.length + ')' : '';
+  if (!list.length) { box.innerHTML = '<div class="alert ok">✅ كل شيء يعمل بشكل طبيعي.</div>'; return; }
+  box.innerHTML = list.map(al => {
+    const cls = al.level === 'error' ? 'err' : (al.level === 'warn' ? 'warn' : 'info');
+    const tag = al.level === 'error' ? 'خطر' : (al.level === 'warn' ? 'تحذير' : 'معلومة');
+    return '<div class="alert ' + cls + '"><span class="tag">⚠️ ' + tag + '</span><span>' + esc(al.message || '') + '</span></div>';
+  }).join('');
+}
+
+function allServices() {
+  return (DATA.accounts || []).flatMap(a => (a.services || []).map(s => ({ ...s, acct: a })));
+}
+
+function renderProjects() {
+  const rows = allServices();
+  document.getElementById('projectCount').textContent = '(' + rows.length + ')';
+  const q = filter.toLowerCase();
+  const tbody = document.getElementById('projects');
+  const filtered = rows.filter(s => {
+    if (!q) return true;
+    const m = s.meta || {};
+    return [s.name, m.name, m.category, m.notes, s.acct.name, s.url || '', s.id]
+      .join(' ').toLowerCase().includes(q);
+  });
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="none" style="text-align:center;padding:20px">لا نتائج' +
+      (q ? ' لـ "' + esc(q) + '"' : '') + '</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(s => {
+    const m = s.meta || {};
+    const gh = ghUrl(m, s.repo);
+    const ghLabel = gh ? (gh.replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\.git$/, '') + ' @ ' + s.branch) : null;
+    return '<tr>' +
+      '<td><strong>' + esc(m.name || s.name) + '</strong>' +
+        '<div class="mono ts">' + esc(s.id) + '</div></td>' +
+      '<td>' + (m.category ? '<span class="tag-pill">' + esc(m.category) + '</span>' : '<span class="none">—</span>') + '</td>' +
+      '<td>' + statusPill(s) + '</td>' +
+      '<td>' + esc(s.acct.name) + '<div class="ts">#' + s.acct.idx + (s.acct.isLeader ? ' · قائد' : '') + '</div></td>' +
+      '<td>' + domainsHtml(s) + '</td>' +
+      '<td>' + (gh ? '<a class="link" href="' + esc(gh) + '" target="_blank">' + esc(ghLabel) + '</a>' : '') +
+        '<div><a class="link" href="' + svcLink(s) + '" target="_blank">عرض في Render ↗</a></div></td>' +
+      '<td class="note">' + (m.notes ? esc(m.notes) : '—') + '</td>' +
+      '<td class="ts">' + fmtDate(s.createdAt) + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderAccounts() {
+  const limits = (DATA.config && DATA.config.limits) || {};
+  const maxServices = limits.maxServicesPerAccount || 2;
+  const maxDomains = limits.customDomainsPerAccount || 2;
+  const maxBw = limits.bandwidthGbPerMonth || 5;
+  document.getElementById('accountCount').textContent = '(' + (DATA.accounts || []).length + ')';
+  document.getElementById('accounts').innerHTML = (DATA.accounts || []).map(a => {
+    if (a.error) {
+      return '<div class="account"><div class="acct-head"><div><div class="name">' + esc(a.name) + '</div>' +
+        '<div class="meta">حساب #' + a.idx + '</div></div><span class="badge b-bad">خطأ</span></div>' +
+        '<div class="err" style="margin-top:10px">' + esc(a.error) + '</div></div>';
+    }
+    const svcs = a.services || [];
+    const susp = a.suspendedServices || 0;
+    const bwUsed = a.bandwidthAllocatedGb || 0;
+    const bwPct = maxBw ? Math.min(100, Math.round(bwUsed / maxBw * 100)) : 0;
+    const domPct = maxDomains ? Math.min(100, Math.round(a.customDomainsUsed / maxDomains * 100)) : 0;
+    const svcPct = maxServices ? Math.min(100, Math.round(svcs.length / maxServices * 100)) : 0;
+    const barCls = pct => pct >= 100 ? 'full' : (pct >= 75 ? 'warn' : 'free');
+
+    const badges = [];
+    if (a.isLeader) badges.push('<span class="badge b-info">🏁 قائد (Registry)</span>');
+    if (a.plan) badges.push('<span class="badge b-ok">' + esc(a.plan) + '</span>');
+    if (susp) badges.push('<span class="badge b-bad">' + susp + ' معطّل</span>');
+    if (a.email) badges.push('<span class="badge b-ok">✉ ' + esc(a.email) + '</span>');
+
+    const infra = [
+      ['المشاريع', svcs.length + '/' + maxServices, svcPct],
+      ['دومينات', a.customDomainsUsed + '/' + maxDomains, domPct],
+      ['عرض نطاق (GB)', bwUsed + '/' + maxBw, bwPct],
+    ].map(([l, v, pct]) => '<div style="min-width:150px"><div class="meta">' + l + ': <strong style="color:var(--text)">' + v + '</strong></div>' +
+      '<div class="bar"><div style="width:' + pct + '%" class="' + barCls(pct) + '"></div></div></div>').join('');
+
+    const list = svcs.map(s => {
+      const m = s.meta || {};
+      return '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;padding:9px 0;border-top:1px solid rgba(37,45,71,.4)">' +
+        '<div><strong>' + esc(m.name || s.name) + '</strong>' + (m.category ? ' <span class="tag-pill">' + esc(m.category) + '</span>' : '') +
+        '<div class="mono ts">' + esc(s.id) + '</div>' +
+        (m.notes ? '<div class="note" style="white-space:normal;max-width:520px">📝 ' + esc(m.notes) + '</div>' : '') +
+        '</div>' +
+        '<div style="display:flex;gap:10px;align-items:center">' + statusPill(s) +
+        '<a class="link" href="' + svcLink(s) + '" target="_blank">عرض في Render ↗</a></div>' +
+        '</div>';
+    }).join('');
+
+    return '<div class="account">' +
+      '<div class="acct-head">' +
+        '<div><div class="name">' + esc(a.name) + '</div>' +
+        '<div class="meta">حساب #' + a.idx + (a.isLeader ? ' · قائد التوزيع' : '') +
+          ' · ' + svcs.length + ' مشروع · ' + a.customDomainsUsed + '/' + maxDomains + ' دومين' +
+          (a.owner ? ' · المالك: ' + esc(a.owner) : '') + '</div>' +
+          (a.note ? '<div class="acct-note">📝 ' + esc(a.note) + '</div>' : '') +
+        '</div>' +
+        '<div class="acct-right">' + badges.join('') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:24px;flex-wrap:wrap;margin:12px 0 8px">' + infra + '</div>' +
+      (svcs.length ? list : '<div class="none" style="padding:10px 0">لا مشاريع على هذا الحساب</div>') +
+    '</div>';
+  }).join('');
+}
+
+function renderConfig() {
+  const c = DATA.config || {};
+  const sel = document.getElementById('cfgStrategy');
+  sel.innerHTML = Object.keys(STRATEGY_LABELS).map(k =>
+    '<option value="' + k + '"' + (c.strategy === k ? ' selected' : '') + '>' + STRATEGY_LABELS[k] + '</option>').join('');
+  const lim = { maxServicesPerAccount: 2, customDomainsPerAccount: 2, bandwidthGbPerMonth: 5, ...(c.limits || {}) };
+  document.getElementById('cfgMax').value = lim.maxServicesPerAccount;
+  document.getElementById('cfgDomains').value = lim.customDomainsPerAccount;
+  document.getElementById('cfgBw').value = lim.bandwidthGbPerMonth;
+  document.getElementById('cfgChip').textContent = 'الاستراتيجية: ' + (STRATEGY_LABELS[c.strategy] || c.strategy || 'auto');
+}
+
+function render(data) {
+  DATA = data;
+  document.getElementById('updated').textContent =
+    'آخر تحديث: ' + new Date().toLocaleString('ar-SA') +
+    ' · ' + DATA.accountCount + ' حساب · ' + (DATA.totals.services || 0) + ' مشروع';
+  renderStats();
+  renderAlerts();
+  renderProjects();
+  renderAccounts();
+  renderConfig();
+}
+
+async function refresh() {
+  try {
+    render(await load());
+  } catch (e) {
+    alert('فشل التحميل: ' + e.message + ' — تحقق من المفتاح');
+    logout();
+  }
+}
+
+function logout() {
+  localStorage.removeItem(KEY); token = '';
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login').classList.remove('hidden');
+  document.getElementById('key').value = '';
+}
+
+async function api(path, opts) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { Authorization: 'Bearer ' + token, ...((opts && opts.headers) || {}) }
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data && data.error ? data.error : ('HTTP ' + res.status));
+    err.status = res.status; throw err;
+  }
+  return data;
+}
+
+function showCfgMsg(html, isErr) {
+  const el = document.getElementById('cfgMsg');
+  el.innerHTML = html;
+  clearTimeout(showCfgMsg._t);
+  showCfgMsg._t = setTimeout(() => { el.innerHTML = ''; }, 4000);
+}
+
+/* ---------- Events ---------- */
+document.getElementById('go').addEventListener('click', async () => {
+  token = document.getElementById('key').value.trim();
+  if (!token) return;
+  try {
+    await api('/api/fleet');
+    localStorage.setItem(KEY, token);
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    refresh();
+  } catch (e) {
+    document.getElementById('loginErr').textContent = 'المفتاح غير صحيح: ' + (e.message || e);
+    document.getElementById('loginErr').classList.remove('hidden');
+  }
+});
+document.getElementById('key').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('go').click(); });
+document.getElementById('refresh').addEventListener('click', refresh);
+document.getElementById('logout').addEventListener('click', logout);
+document.getElementById('q').addEventListener('input', e => { filter = e.target.value; renderProjects(); });
+
+document.getElementById('saveCfg').addEventListener('click', async () => {
+  const body = {
+    strategy: document.getElementById('cfgStrategy').value,
+    limits: {
+      maxServicesPerAccount: Math.max(0, parseInt(document.getElementById('cfgMax').value) || 0),
+      customDomainsPerAccount: Math.max(0, parseInt(document.getElementById('cfgDomains').value) || 0),
+      bandwidthGbPerMonth: Math.max(0, parseInt(document.getElementById('cfgBw').value) || 0),
+    }
+  };
+  try {
+    await api('/api/config', { method: 'PUT', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
+    showCfgMsg('<div class="ok">✓ تم حفظ الإعدادات</div>');
+    refresh();
+  } catch (e) {
+    showCfgMsg('<div class="err">فشل الحفظ: ' + esc(e.message) + '</div>', true);
+  }
+});
+
+document.getElementById('resetCfg').addEventListener('click', async () => {
+  try {
+    await api('/api/config', { method: 'DELETE' });
+    showCfgMsg('<div class="ok">✓ أُعيدت الإعدادات الافتراضية</div>');
+    refresh();
+  } catch (e) {
+    showCfgMsg('<div class="err">فشل: ' + esc(e.message) + '</div>', true);
+  }
+});
+
+/* ---------- Boot ---------- */
+if (token) {
+  fetch('/api/fleet', { headers: { Authorization: 'Bearer ' + token } })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = r.json();
+      document.getElementById('login').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      return d;
+    })
+    .then(() => refresh())
+    .catch(() => logout());
+}
+</script>
+</body>
+</html>

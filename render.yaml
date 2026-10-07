@@ -1,0 +1,50 @@
+services:
+  # ───────────────────────────────────────────────────────────────
+  #  Render Fleet Registry — الموقع الوسيط
+  #  انشر هذا الملف كـ Blueprint على حساب Render **منفصل**.
+  #  هذا الحساب هو "قائد الأسطول" — يجب أن يبقى شغّالاً دائماً.
+  #  نوصي بربط بطاقة دفع بهذا الحساب فقط لتفادي التعليق.
+  # ───────────────────────────────────────────────────────────────
+  - type: web
+    name: render-fleet-registry
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # مفتاح الـ API — هذا هو "المفتاح الرئيسي" للأسطول
+      - key: REGISTRY_API_KEY
+        sync: false
+      # الحسابات (كررها لكل حساب إضافي)
+      - key: RENDER_ACCOUNT_1_NAME
+        value: الحساب-الأول
+      - key: RENDER_ACCOUNT_1_KEY
+        sync: false
+      - key: RENDER_ACCOUNT_2_NAME
+        value: الحساب-الثاني
+      - key: RENDER_ACCOUNT_2_KEY
+        sync: false
+      # - key: RENDER_ACCOUNT_3_NAME
+      #   value: الحساب-الثالث
+      # - key: RENDER_ACCOUNT_3_KEY
+      #   sync: false
+      # فهرس "قائد الأسفل" — الحساب الذي يستضيف هذا الـ Registry نفسه.
+      # يُستثنى من نشره على حساباته الأخرى (توزيع التوازن).
+      # مثال: القائد عند الحساب رقم 2 → REGISTRY_ACCOUNT_IDX=2
+      - key: REGISTRY_ACCOUNT_IDX
+        value: "1"
+      # استمرار البيانات الوصفية (سجلّ النشر، الملاحظات، الفئة) في GitHub.
+      # بدون FLEET_GH_TOKEN بقيت البيانات في الذاكرة فقط وتضيع مع إعادة النشر.
+      - key: FLEET_GH_TOKEN
+        sync: false
+      - key: FLEET_GH_REPO
+        value: immmh5/render-fleet-registry
+      - key: FLEET_GH_BRANCH
+        value: main
+      - key: FLEET_GH_FILE
+        value: fleet-data.json

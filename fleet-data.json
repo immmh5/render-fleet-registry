@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "updatedAt": null,
+  "config": {
+    "strategy": "auto",
+    "limits": {
+      "customDomainsPerAccount": 2,
+      "maxServicesPerAccount": 2,
+      "bandwidthGbPerMonth": 5
+    },
+    "warnAtBandwidthPct": 80,
+    "warnAtDomainsFree": 0,
+    "placementNotes": []
+  },
+  "projects": {},
+  "accounts": {}
+}

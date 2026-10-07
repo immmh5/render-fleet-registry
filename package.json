@@ -1,0 +1,14 @@
+{
+  "name": "render-fleet-registry",
+  "version": "1.0.0",
+  "description": "Central registry/orchestrator for multiple Render accounts — the middleware between the AI and a fleet of Render workspaces",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
