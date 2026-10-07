@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-07T15:19:08.963Z",
+  "updatedAt": "2026-10-07T15:20:16.504Z",
   "config": {
     "strategy": "auto",
     "limits": {
@@ -12,6 +12,18 @@
     "warnAtDomainsFree": 0,
     "placementNotes": []
   },
-  "projects": {},
+  "projects": {
+    "srv-db366bl9fdbs73a3t3v0": {
+      "deploys": [
+        {
+          "at": "2026-10-07T15:20:16.504Z",
+          "trigger": "create",
+          "kind": "created",
+          "status": "pending"
+        }
+      ],
+      "lastDeploy": "2026-10-07T15:20:16.504Z"
+    }
+  },
   "accounts": {}
 }
