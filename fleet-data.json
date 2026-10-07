@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-07T15:21:24.807Z",
+  "updatedAt": "2026-10-07T15:22:05.915Z",
   "config": {
     "strategy": "auto",
     "limits": {
@@ -22,7 +22,9 @@
           "status": "pending"
         }
       ],
-      "lastDeploy": "2026-10-07T15:21:24.807Z"
+      "lastDeploy": "2026-10-07T15:21:24.807Z",
+      "title": "Key Pool Proxy",
+      "note": "Free plan / ephemeral FS (DB resets on redeploy). Secrets in local .env"
     }
   },
   "accounts": {}
