@@ -639,7 +639,8 @@ const server = http.createServer(async (req, res) => {
     /* ---------- /api/services/:acct/:id/deploys ---------- */
     if (parts[1] === 'services' && parts[2] && parts[3] && parts[4] === 'deploys' && method === 'POST') {
       const account = getAccount(parts[2]);
-      const clearCache = body && body.clearCache === true ? 'clear' : 'noClear';
+      const clearCache = body && (body.clearCache === true || body.clearCache === 'clear')
+        ? 'clear' : 'do_not_clear';
       const r = await renderCall(account, `/services/${parts[3]}/deploys`, { method: 'POST', body: { clearCache } });
       if (r.status >= 400) return sendError(res, r.status, `deploy failed: ${JSON.stringify(r.body)}`);
       // حدّث تاريخ آخر نشر في البيانات الوصفية + سجّل في سجلّ النشر
