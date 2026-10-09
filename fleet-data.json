@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-09T09:24:32.403Z",
+  "updatedAt": "2026-10-09T10:53:37.154Z",
   "config": {
     "strategy": "auto",
     "limits": {
@@ -31,6 +31,23 @@
       "lastDeploy": "2026-10-09T09:24:32.403Z",
       "title": "Key Pool Proxy",
       "note": "Free plan / ephemeral FS (DB resets on redeploy). Secrets in local .env"
+    },
+    "srv-db4cfbs9v7es73a6jt20": {
+      "title": "Free Claude Code unified API",
+      "description": "Unified Anthropic/OpenAI-compatible proxy with free-tier model fallback",
+      "category": "api",
+      "repo": "https://github.com/immmh5/fcc-render",
+      "branch": "main",
+      "note": "native python 3.14.7; install from pypi",
+      "deploys": [
+        {
+          "at": "2026-10-09T10:53:37.153Z",
+          "trigger": "create",
+          "kind": "created",
+          "status": "pending"
+        }
+      ],
+      "lastDeploy": "2026-10-09T10:53:37.153Z"
     }
   },
   "accounts": {}
