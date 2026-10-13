@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-09T10:53:37.154Z",
+  "updatedAt": "2026-10-13T18:50:05.092Z",
   "config": {
     "strategy": "auto",
     "limits": {
@@ -48,6 +48,19 @@
         }
       ],
       "lastDeploy": "2026-10-09T10:53:37.153Z"
+    },
+    "srv-db77qmt9fdbs73d71g1g": {
+      "kind": "static",
+      "note": "Spellwise spelling trainer",
+      "deploys": [
+        {
+          "at": "2026-10-13T18:50:05.092Z",
+          "trigger": "create",
+          "kind": "created",
+          "status": "pending"
+        }
+      ],
+      "lastDeploy": "2026-10-13T18:50:05.092Z"
     }
   },
   "accounts": {}
