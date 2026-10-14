@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-13T18:50:05.092Z",
+  "updatedAt": "2026-10-14T00:37:14.854Z",
   "config": {
     "strategy": "auto",
     "limits": {
@@ -61,6 +61,20 @@
         }
       ],
       "lastDeploy": "2026-10-13T18:50:05.092Z"
+    },
+    "srv-db7cteaj9qps73bvetc0": {
+      "title": "Data Science hub (Arabic/English)",
+      "category": "education",
+      "repo": "immmh5/data-site",
+      "deploys": [
+        {
+          "at": "2026-10-14T00:37:14.854Z",
+          "trigger": "create",
+          "kind": "created",
+          "status": "pending"
+        }
+      ],
+      "lastDeploy": "2026-10-14T00:37:14.854Z"
     }
   },
   "accounts": {}
