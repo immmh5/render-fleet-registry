@@ -624,7 +624,7 @@ const server = http.createServer(async (req, res) => {
           return sendError(res, 402, `${account.name} has reached its ${limits.customDomainsPerAccount}-domain limit`);
         }
         const r = await renderCall(account, `/services/${parts[3]}/custom-domains`, {
-          method: 'POST', body: { customDomain: { name: domain } },
+          method: 'POST', body: { name: domain },
         });
         if (r.status >= 400) return sendError(res, r.status, `add domain failed: ${JSON.stringify(r.body)}`);
         return send(res, 201, r.body);
@@ -633,6 +633,11 @@ const server = http.createServer(async (req, res) => {
         const r = await renderCall(account, `/services/${parts[3]}/custom-domains/${parts[5]}`, { method: 'DELETE' });
         if (r.status >= 400) return sendError(res, r.status, `delete domain failed: ${JSON.stringify(r.body)}`);
         return send(res, 200, { ok: true, deleted: parts[5] });
+      }
+      if (method === 'POST' && parts[5] && parts[6] === 'verify') {
+        const r = await renderCall(account, `/services/${parts[3]}/custom-domains/${parts[5]}/verify`, { method: 'POST' });
+        if (r.status >= 400) return sendError(res, r.status, `verify failed: ${JSON.stringify(r.body)}`);
+        return send(res, 200, r.body || { ok: true, verified: parts[5] });
       }
     }
 
