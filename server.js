@@ -223,7 +223,7 @@ async function listCustomDomains(account, serviceId) {
   return rows.map(d => {
     const cd = d.customDomain || d;
     return {
-      id: cd.id, domain: cd.domain,
+      id: cd.id, domain: cd.name || cd.domain,
       verificationStatus: cd.verificationStatus,
       createdAt: cd.createdAt,
     };
@@ -262,7 +262,7 @@ async function accountFleet(account) {
     name: account.name,
     services: withDomains,
     customDomainsUsed: withDomains.reduce((n, s) => n + s.customDomains.length, 0),
-    suspendedServices: withDomains.filter(s => s.suspended).length,
+    suspendedServices: withDomains.filter(s => s.suspended === 'suspended').length,
   };
 }
 
@@ -624,7 +624,7 @@ const server = http.createServer(async (req, res) => {
           return sendError(res, 402, `${account.name} has reached its ${limits.customDomainsPerAccount}-domain limit`);
         }
         const r = await renderCall(account, `/services/${parts[3]}/custom-domains`, {
-          method: 'POST', body: { customDomain: { domain } },
+          method: 'POST', body: { customDomain: { name: domain } },
         });
         if (r.status >= 400) return sendError(res, r.status, `add domain failed: ${JSON.stringify(r.body)}`);
         return send(res, 201, r.body);
