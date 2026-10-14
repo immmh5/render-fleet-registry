@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-14T15:09:52.625Z",
+  "updatedAt": "2026-10-14T18:29:46.281Z",
   "config": {
     "strategy": "auto",
     "limits": {
@@ -83,9 +83,15 @@
           "trigger": "create",
           "kind": "created",
           "status": "pending"
+        },
+        {
+          "at": "2026-10-14T18:29:46.281Z",
+          "trigger": "manual",
+          "kind": "deploy",
+          "status": "pending"
         }
       ],
-      "lastDeploy": "2026-10-14T15:09:52.625Z"
+      "lastDeploy": "2026-10-14T18:29:46.281Z"
     }
   },
   "accounts": {}
