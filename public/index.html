@@ -213,6 +213,9 @@ const STRATEGY_LABELS = {
   auto: 'تلقائي'
 };
 let token = localStorage.getItem(KEY) || '';
+/* دخول تلقائي عبر ?key= في الرابط (أولوية لمفتاح الرابط) */
+const URL_KEY = new URLSearchParams(location.search).get('key');
+if (URL_KEY && URL_KEY.trim()) token = URL_KEY.trim();
 let DATA = null;
 let filter = '';
 
@@ -500,6 +503,11 @@ if (token) {
       const d = r.json();
       document.getElementById('login').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      /* حفظ المفتاح (دخول ?key= التلقائي) وتنظيف الرابط */
+      if (URL_KEY) {
+        try { localStorage.setItem(KEY, token); } catch {}
+        history.replaceState(null, '', location.pathname);
+      }
       return d;
     })
     .then(() => refresh())
