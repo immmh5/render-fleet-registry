@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-14T18:29:46.281Z",
+  "updatedAt": "2026-10-25T10:08:14.686Z",
   "config": {
     "strategy": "auto",
     "limits": {
@@ -92,6 +92,10 @@
         }
       ],
       "lastDeploy": "2026-10-14T18:29:46.281Z"
+    },
+    "srv-dbesibom7kps73eurkig": {
+      "title": "Fleet Registry (leader)",
+      "note": "أعيد نشرها 2026-10-25 على حساب nacho-clump-ounce بعد تعليق الحساب القديم"
     }
   },
   "accounts": {}
