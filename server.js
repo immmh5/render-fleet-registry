@@ -201,6 +201,21 @@ async function renderCall(account, urlPath, options = {}) {
   }
 }
 
+/* ownerId (معرّف مساحة العمل) لكل حساب — يُجلب مرة واحدة ويُخزّن مؤقتاً */
+const OWNER_CACHE = new Map();
+async function ownerIdFor(account) {
+  if (OWNER_CACHE.has(account.idx)) return OWNER_CACHE.get(account.idx);
+  const r = await renderCall(account, '/owners');
+  if (r.status >= 400 || !Array.isArray(r.body) || !r.body.length) {
+    throw new Error(`owners failed for "${account.name}" (HTTP ${r.status}): ${JSON.stringify(r.body)}`);
+  }
+  const first = r.body[0];
+  const oid = (first && first.owner && first.owner.id) || (first && first.id);
+  if (!oid) throw new Error(`owners: no id in response for "${account.name}"`);
+  OWNER_CACHE.set(account.idx, oid);
+  return oid;
+}
+
 async function listServices(account) {
   const services = [];
   let cursor = '', guard = 0;
@@ -655,6 +670,25 @@ const server = http.createServer(async (req, res) => {
         await writeStore(store);
       }
       return send(res, 201, r.body);
+    }
+
+    /* ---------- /api/services/:acct/:id/logs ---------- */
+    if (parts[1] === 'services' && parts[2] && parts[3] && parts[4] === 'logs' && method === 'GET') {
+      const account = getAccount(parts[2]);
+      const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit')) || 60));
+      const oid = await ownerIdFor(account);
+      const start = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      const q = `/logs?ownerId=${encodeURIComponent(oid)}&resource=${encodeURIComponent(parts[3])}` +
+        `&startTime=${encodeURIComponent(start)}&direction=backward&limit=${limit}`;
+      const r = await renderCall(account, q);
+      if (r.status >= 400) return sendError(res, r.status, `logs failed: ${JSON.stringify(r.body)}`);
+      const rows = (r.body && Array.isArray(r.body.logs)) ? r.body.logs : [];
+      const logs = rows.map(x => {
+        const labels = {};
+        (x.labels || []).forEach(l => { labels[l.name] = l.value; });
+        return { message: x.message, timestamp: x.timestamp, level: labels.level, type: labels.type, instance: labels.instance };
+      }).filter(l => l.message);
+      return send(res, 200, { serviceId: parts[3], count: logs.length, logs });
     }
 
     /* ---------- /api/services/:acct/:id/envs ---------- */

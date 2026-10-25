@@ -123,6 +123,27 @@
     .stats { grid-template-columns: repeat(3, 1fr); }
     .cfg-grid { grid-template-columns: 1fr; }
   }
+  /* ---- وحدة التحكم ---- */
+  .acts { display: flex; gap: 5px; flex-wrap: wrap; }
+  .act {
+    border: 1px solid var(--border); background: rgba(77,159,255,.08); color: var(--text);
+    padding: 3px 9px; border-radius: 7px; cursor: pointer; font-size: 12px; font-family: inherit;
+    transition: all .15s; white-space: nowrap;
+  }
+  .act:hover { background: rgba(77,159,255,.25); border-color: var(--blue); }
+  .act:disabled { opacity: .45; cursor: wait; }
+  .act.go { background: rgba(52,211,153,.1); } .act.go:hover { border-color: var(--green); background: rgba(52,211,153,.25); }
+  .act.warn { background: rgba(251,191,36,.08); } .act.warn:hover { border-color: var(--yellow); background: rgba(251,191,36,.22); }
+  .act.bad { background: rgba(248,113,113,.08); } .act.bad:hover { border-color: var(--red); background: rgba(248,113,113,.25); }
+  .modal { position: fixed; inset: 0; background: rgba(5,8,18,.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+  .modal.hidden { display: none; }
+  .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: min(860px, 100%); max-height: 85vh; display: flex; flex-direction: column; }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  #modalBody { margin: 0; padding: 14px 18px; overflow: auto; direction: ltr; text-align: left; font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; max-height: 65vh; }
+  .toast { position: fixed; bottom: 18px; right: 18px; z-index: 60; background: var(--card); border: 1px solid var(--green);
+    color: var(--text); padding: 11px 18px; border-radius: 10px; font-size: 14px; box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+  .toast.err { border-color: var(--red); }
+  .toast.fade { opacity: 0; transition: opacity .4s; }
 </style>
 </head>
 <body>
@@ -164,7 +185,7 @@
       <table>
         <thead><tr>
           <th>المشروع</th><th>الفئة</th><th>الحالة</th><th>الحساب</th>
-          <th>الدومينات</th><th>الرابط / GitHub</th><th>ملاحظة</th><th>أُنشئ في</th>
+          <th>الدومينات</th><th>الرابط / GitHub</th><th>ملاحظة</th><th>أُنشئ في</th><th>التحكم</th>
         </tr></thead>
         <tbody id="projects"></tbody>
       </table>
@@ -250,6 +271,17 @@ function domainsHtml(svc) {
 function svcLink(svc) {
   return 'https://dashboard.render.com/web/' + encodeURIComponent(svc.id) + '/deploys';
 }
+/* أزرار التحكم — تدير الخدمة عبر API الحساب مباشرة */
+function actsHtml(s) {
+  const id = esc(s.id), acct = s.acct ? esc(s.acct.idx) : '', nm = esc((s.meta && s.meta.name) || s.name || '');
+  const common = ' data-id="' + id + '" data-acct="' + acct + '" data-name="' + nm + '"';
+  return '<button class="act" data-act="deploy"' + common + ' title="نشر جديد من آخر كوميت">⟳ نشر</button>' +
+    (s.suspended === 'suspended'
+      ? '<button class="act go" data-act="resume"' + common + ' title="استئناف الخدمة">▶ تشغيل</button>'
+      : '<button class="act warn" data-act="suspend"' + common + ' title="تعليق الخدمة مؤقتاً">⏸ تعليق</button>') +
+    '<button class="act" data-act="logs"' + common + ' title="آخر السجلات">📜 سجل</button>' +
+    '<button class="act bad" data-act="delete"' + common + ' title="حذف نهائي">🗑</button>';
+}
 
 async function load() {
   const [fleet, alerts] = await Promise.all([
@@ -303,7 +335,7 @@ function renderProjects() {
       .join(' ').toLowerCase().includes(q);
   });
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="none" style="text-align:center;padding:20px">لا نتائج' +
+    tbody.innerHTML = '<tr><td colspan="9" class="none" style="text-align:center;padding:20px">لا نتائج' +
       (q ? ' لـ "' + esc(q) + '"' : '') + '</td></tr>';
     return;
   }
@@ -322,6 +354,7 @@ function renderProjects() {
         '<div><a class="link" href="' + svcLink(s) + '" target="_blank">عرض في Render ↗</a></div></td>' +
       '<td class="note">' + (m.notes ? esc(m.notes) : '—') + '</td>' +
       '<td class="ts">' + fmtDate(s.createdAt) + '</td>' +
+      '<td><div class="acts">' + actsHtml(s) + '</div></td>' +
     '</tr>';
   }).join('');
 }
@@ -366,7 +399,8 @@ function renderAccounts() {
         '<div class="mono ts">' + esc(s.id) + '</div>' +
         (m.notes ? '<div class="note" style="white-space:normal;max-width:520px">📝 ' + esc(m.notes) + '</div>' : '') +
         '</div>' +
-        '<div style="display:flex;gap:10px;align-items:center">' + statusPill(s) +
+        '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + statusPill(s) +
+        '<div class="acts">' + actsHtml(s) + '</div>' +
         '<a class="link" href="' + svcLink(s) + '" target="_blank">عرض في Render ↗</a></div>' +
         '</div>';
     }).join('');
@@ -448,6 +482,67 @@ function showCfgMsg(html, isErr) {
 }
 
 /* ---------- Events ---------- */
+function toast(msg, isErr) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const el = document.createElement('div');
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => { el.classList.add('fade'); setTimeout(() => el.remove(), 450); }, 3800);
+}
+function busy(b, on, label) {
+  b.disabled = !!on;
+  if (on && label) b.textContent = label;
+}
+async function doAction(act, id, acct, name, btn) {
+  const path = '/api/services/' + acct + '/' + encodeURIComponent(id);
+  if (act === 'deploy') {
+    busy(btn, true, '⏳ نشر…');
+    try { await api(path + '/deploys', { method: 'POST', body: JSON.stringify({ clearCache: 'do_not_clear' }), headers: { 'Content-Type': 'application/json' } });
+      toast('🚀 بدأ النشر لـ ' + name + ' — سيجهز خلال دقيقة'); setTimeout(refresh, 2500);
+    } catch (e) { toast('فشل النشر: ' + e.message, true); }
+    busy(btn, false); return;
+  }
+  if (act === 'suspend' || act === 'resume') {
+    busy(btn, true, act === 'suspend' ? '⏳…' : '⏳…');
+    try { await api(path + '/' + act, { method: 'POST' });
+      toast(act === 'suspend' ? '⏸ تم إرسال تعليق — يتفعل خلال ثوانٍ' : '▶ تم إرسال التشغيل — يتفعل خلال ثوانٍ');
+      setTimeout(refresh, 3000);
+    } catch (e) { toast('فشل: ' + e.message, true); }
+    busy(btn, false); return;
+  }
+  if (act === 'logs') {
+    openModal('📜 سجلات ' + name, 'جاري التحميل…');
+    try {
+      const d = await api(path + '/logs?limit=100');
+      const lines = (d.logs || []).map(l => '[' + (l.timestamp || '').replace('T', ' ').replace('Z', '') + '] ' + l.message).join('\n');
+      setModalBody(lines || 'لا سجلات متاحة بعد (الخدمة سليمة ولم تُصدر سجلات حديثة)');
+    } catch (e) { setModalBody('❌ فشل جلب السجلات: ' + e.message); }
+    return;
+  }
+  if (act === 'delete') {
+    if (!confirm('⚠️ حذف نهائي للخدمة "' + name + '"؟')) return;
+    if (!confirm('متأكد تماماً؟ سيُحذف المشروع ودوميناته للأبد — لا استرجاع!')) return;
+    busy(btn, true, '⏳…');
+    try { await api(path, { method: 'DELETE' }); toast('🗑 حُذفت ' + name); refresh(); }
+    catch (e) { toast('فشل الحذف: ' + e.message, true); busy(btn, false); }
+    return;
+  }
+}
+function onAct(e) {
+  const b = e.target.closest('button.act');
+  if (b && b.dataset.act) doAction(b.dataset.act, b.dataset.id, b.dataset.acct, b.dataset.name, b);
+}
+document.getElementById('projects').addEventListener('click', onAct);
+document.getElementById('accounts').addEventListener('click', onAct);
+/* ---------- Modal ---------- */
+function openModal(title, body) {
+  document.getElementById('modalTitle').textContent = title;
+  setModalBody(body);
+  document.getElementById('modal').classList.remove('hidden');
+}
+function setModalBody(t) { document.getElementById('modalBody').textContent = t; }
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 document.getElementById('go').addEventListener('click', async () => {
   token = document.getElementById('key').value.trim();
   if (!token) return;
@@ -514,5 +609,13 @@ if (token) {
     .catch(() => logout());
 }
 </script>
+
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head"><strong id="modalTitle"></strong>
+      <button class="btn ghost" onclick="closeModal()">✕ إغلاق</button></div>
+    <pre id="modalBody"></pre>
+  </div>
+</div>
 </body>
 </html>
