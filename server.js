@@ -459,15 +459,15 @@ const server = http.createServer(async (req, res) => {
   const pathname = url.pathname.replace(/\/+$/, '') || '/';
   const method = req.method.toUpperCase();
 
-  // ---- /health (no auth) -----------------------------------------
-  if (pathname === '/health' && method === 'GET') {
+  // ---- /health (no auth) — HEAD مدعوم لمراقبات UptimeRobot -------
+  if (pathname === '/health' && (method === 'GET' || method === 'HEAD')) {
     return send(res, 200, { ok: true, accounts: ACCOUNTS.length,
                             leader: REGISTRY_ACCT_IDX, uptime: process.uptime(),
                             time: new Date().toISOString() });
   }
 
   // ---- dashboard (auth via ?key= or Bearer) ----------------------
-  if ((pathname === '/' || pathname === '/index.html') && method === 'GET') {
+  if ((pathname === '/' || pathname === '/index.html') && (method === 'GET' || method === 'HEAD')) {
     const h = (req.headers['authorization'] || '').replace(/^Bearer\s+/i, '').trim();
     const q = url.searchParams.get('key');
     if (!REGISTRY_KEY || (h !== REGISTRY_KEY && q !== REGISTRY_KEY)) {
