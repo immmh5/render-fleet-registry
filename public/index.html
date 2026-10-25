@@ -43,6 +43,9 @@
   .btn { padding: 8px 14px; margin: 0; font-size: 13px; }
   .btn.ghost { background: var(--card); border: 1px solid var(--border); color: var(--text); }
   .btn.danger { background: #3a1d24; border: 1px solid #5c2c36; color: var(--red); }
+  .cred-in { padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 13px; }
+  .bkm { display: inline-block; padding: 8px 14px; border: 1.5px dashed #4a7de0; border-radius: 8px; color: #9db9f0; font-size: 13px; text-decoration: none; cursor: grab; background: rgba(74,125,224,.08); }
+  .bkm:hover { background: rgba(74,125,224,.18); }
 
   main { max-width: 1280px; margin: 0 auto; padding: 8px 24px 40px; }
 
@@ -194,6 +197,15 @@
     <section class="panel" id="accountsPanel">
       <h2>🏦 الحسابات <span class="count" id="accountCount"></span></h2>
       <div id="accounts"></div>
+    </section>
+
+    <section class="panel" id="loginPanel">
+      <h2>🔐 دخول حسابات Render <span class="count">(تعبئة تلقائية)</span></h2>
+      <div class="meta" style="margin-bottom:12px;line-height:1.9">
+        احفظ الإيميل وكلمة المرور مرة واحدة — تُحفظ <strong style="color:var(--text)">في متصفحك فقط</strong> ولا تُرسل للسيرفر.
+        ثم اسحب «الزر السحري» إلى شريط المفضلة في المتصفح؛ ومن أي وقت تفتح صفحة دخول Render اضغط الزر → فيملأ الحقول ويضغط Sign in لوحده.
+      </div>
+      <div id="loginCards"></div>
     </section>
 
     <section class="panel" id="configPanel">
@@ -442,7 +454,77 @@ function render(data) {
   renderAlerts();
   renderProjects();
   renderAccounts();
+  renderLoginPanel();
   renderConfig();
+}
+
+/* ---------- دخول حسابات Render (تعبئة تلقائية) ---------- */
+const CREDS_KEY = 'render_login_creds_v1';
+function getCreds() {
+  try { return JSON.parse(localStorage.getItem(CREDS_KEY)) || {}; } catch { return {}; }
+}
+function saveCred(idx, field, val) {
+  const c = getCreds();
+  if (!c[idx]) c[idx] = { email: '', pass: '' };
+  c[idx][field] = val;
+  localStorage.setItem(CREDS_KEY, JSON.stringify(c));
+  const done = c[idx].email && c[idx].pass;
+  const stat = document.getElementById('credStat' + idx);
+  if (stat) stat.innerHTML = done
+    ? '· <span style="color:#7ee2a8">✓ محفوظ في المتصفح</span>'
+    : '· <span style="color:#e8b34b">لم يُحفظ بعد</span>';
+  const bkmZone = document.getElementById('bkmZone' + idx);
+  if (bkmZone) bkmZone.innerHTML = done ? '<a class="bkm" href="' + esc(buildBookmarklet(idx)) + '" onclick="return false" title="اسحبني إلى شريط المفضلة ثم اضغطه وأنت في صفحة دخول Render">🧲 اسحبني لشريط المفضلة — تعبئة تلقائية</a>' : '';
+}
+function b64utf8(s) { return btoa(unescape(encodeURIComponent(s))); }
+function buildBookmarklet(idx) {
+  const c = getCreds()[idx] || {};
+  if (!c.email || !c.pass) return '';
+  const payload = b64utf8(JSON.stringify({ e: c.email, p: c.pass }));
+  return 'javascript:(function(){var c=JSON.parse(decodeURIComponent(escape(atob(' + JSON.stringify(payload) +
+    '))));var d=document,e=d.querySelector(\'input[name=email]\'),p=d.querySelector(\'input[name=password]\');' +
+    'if(!e||!p){alert(\'افتح أولاً صفحة دخول Render\');return}' +
+    'function f(i,v){var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,\'value\').set;' +
+    's.call(i,v);i.dispatchEvent(new Event(\'input\',{bubbles:true}))}' +
+    'f(e,c.e);f(p,c.p);setTimeout(function(){var b=d.querySelector(\'button[type=submit]\');if(b)b.click()},450)})()';
+}
+function copyCred(idx, field) {
+  const c = getCreds()[idx] || {};
+  const v = field === 'email' ? c.email : c.pass;
+  if (!v) { toast('لا توجد قيمة محفوظة', true); return; }
+  (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject())
+    .then(() => toast('✓ تم النسخ'))
+    .catch(() => {
+      const t = document.createElement('textarea');
+      t.value = v; document.body.appendChild(t); t.select();
+      document.execCommand('copy'); t.remove(); toast('✓ تم النسخ');
+    });
+}
+function renderLoginPanel() {
+  const el = document.getElementById('loginCards');
+  if (!el) return;
+  const creds = getCreds();
+  el.innerHTML = (DATA.accounts || []).map(a => {
+    const c = creds[a.idx] || {};
+    const saved = c.email && c.pass;
+    const bkm = buildBookmarklet(a.idx);
+    return '<div class="account">' +
+      '<div class="acct-head"><div><div class="name">' + esc(a.name) + '</div>' +
+      '<div class="meta">حساب #' + a.idx + (a.email ? ' · ✉ ' + esc(a.email) : '') +
+      '<span id="credStat' + a.idx + '">' + (saved ? '· <span style="color:#7ee2a8">✓ محفوظ في المتصفح</span>' : '· <span style="color:#e8b34b">لم يُحفظ بعد</span>') + '</span></div></div></div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px">' +
+      '<input value="' + esc(c.email || a.email || '') + '" oninput="saveCred(' + a.idx + ',\'email\',this.value)" placeholder="البريد الإلكتروني" style="flex:1;min-width:200px" class="cred-in">' +
+      '<input type="password" value="' + esc(c.pass || '') + '" oninput="saveCred(' + a.idx + ',\'pass\',this.value)" placeholder="كلمة المرور" style="flex:1;min-width:160px" class="cred-in">' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px">' +
+      '<button class="btn ghost" onclick="copyCred(' + a.idx + ',\'email\')">📋 كوبي الإيميل</button>' +
+      '<button class="btn ghost" onclick="copyCred(' + a.idx + ',\'pass\')">📋 كوبي الباسورد</button>' +
+      '<a class="btn ghost" style="text-decoration:none" href="https://dashboard.render.com/login" target="_blank">↗ فتح صفحة دخول Render</a>' +
+      '<span id="bkmZone' + a.idx + '">' + (saved && bkm ? '<a class="bkm" href="' + esc(bkm) + '" onclick="return false" title="اسحبني إلى شريط المفضلة ثم اضغطه وأنت في صفحة دخول Render">🧲 اسحبني لشريط المفضلة — تعبئة تلقائية</a>' : '') + '</span>' +
+      '</div>' +
+      (saved ? '<div class="meta" style="margin-top:8px">💡 بعد السحب: افتح صفحة دخول Render ← اضغط الزر السحري ← يدخل لوحده. الزر يحوي بياناتك — لا تشاركه مع أحد.</div>' : '') +
+      '</div>';
+  }).join('');
 }
 
 async function refresh() {
