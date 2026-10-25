@@ -466,13 +466,8 @@ const server = http.createServer(async (req, res) => {
                             time: new Date().toISOString() });
   }
 
-  // ---- dashboard (auth via ?key= or Bearer) ----------------------
+  // ---- dashboard (القشرة عامة — شاشة الدخول داخلها، والبيانات محمية عبر /api) ----
   if ((pathname === '/' || pathname === '/index.html') && (method === 'GET' || method === 'HEAD')) {
-    const h = (req.headers['authorization'] || '').replace(/^Bearer\s+/i, '').trim();
-    const q = url.searchParams.get('key');
-    if (!REGISTRY_KEY || (h !== REGISTRY_KEY && q !== REGISTRY_KEY)) {
-      return sendError(res, 401, 'unauthorized — pass ?key=<REGISTRY_API_KEY> or Authorization: Bearer <key>');
-    }
     try {
       const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
       return send(res, 200, html, 'text/html; charset=utf-8');
