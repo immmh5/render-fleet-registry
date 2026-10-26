@@ -199,6 +199,7 @@ async function readStore(opts) {
 }
 
 async function writeStore(data, opts) {
+  data.version = 3;
   mem = data;
   memDirty = true;
   memLoadedAt = Date.now();
