@@ -28,7 +28,8 @@
   "projects": {
     "srv-dbesibom7kps73eurkig": {
       "title": "Fleet Registry (leader)",
-      "note": "أعيد نشرها 2026-10-25 على حساب nacho-clump-ounce بعد تعليق الحساب القديم"
+      "note": "أعيد نشرها 2026-10-25 على حساب nacho-clump-ounce بعد تعليق الحساب القديم",
+      "acct": 1
     },
     "srv-dbe755vb9u1s738lcho0": {
       "title": "session-key-proxy",
@@ -48,7 +49,17 @@
           "status": "pending"
         }
       ],
-      "lastDeploy": "2026-10-14T18:29:46.281Z"
+      "lastDeploy": "2026-10-14T18:29:46.281Z",
+      "acct": 3
+    },
+    "srv-db3r3ho473hc73f1mcgg": {
+      "acct": 4
+    },
+    "srv-db32gjm7bikc73bevkug": {
+      "acct": 4
+    },
+    "srv-db1ue70m7kps73duvdag": {
+      "acct": 4
     }
   },
   "accounts": {},
@@ -66,17 +77,88 @@
     }
   ],
   "monitors": {
-    "services": {},
+    "services": {
+      "srv-dbesibom7kps73eurkig": {
+        "enabled": true,
+        "url": "https://render-fleet-registry-uyjn.onrender.com",
+        "intervalMin": 10,
+        "state": "up",
+        "consecutiveFails": 0,
+        "lastCheckAt": "2026-10-26T23:00:28.143Z",
+        "urlPinned": false,
+        "healedCount": 0,
+        "lastOk": true,
+        "lastCode": 200,
+        "lastMs": 1114,
+        "lastError": null
+      },
+      "srv-dbe755vb9u1s738lcho0": {
+        "enabled": true,
+        "url": "https://session-key-proxy.onrender.com",
+        "intervalMin": 10,
+        "state": "degraded",
+        "consecutiveFails": 1,
+        "lastCheckAt": "2026-10-26T23:00:38.154Z",
+        "urlPinned": false,
+        "healedCount": 0,
+        "lastOk": false,
+        "lastCode": null,
+        "lastMs": 10010,
+        "lastError": "timeout (10s)"
+      },
+      "srv-db3r3ho473hc73f1mcgg": {
+        "enabled": true,
+        "url": "https://mega-bot-vhw0.onrender.com",
+        "intervalMin": 10,
+        "state": "degraded",
+        "consecutiveFails": 1,
+        "lastCheckAt": "2026-10-26T23:00:39.056Z",
+        "urlPinned": false,
+        "healedCount": 0,
+        "lastOk": false,
+        "lastCode": 503,
+        "lastMs": 902,
+        "lastError": null
+      },
+      "srv-db32gjm7bikc73bevkug": {
+        "enabled": true,
+        "url": "https://dsh-rhux.onrender.com",
+        "intervalMin": 10,
+        "state": "degraded",
+        "consecutiveFails": 1,
+        "lastCheckAt": "2026-10-26T23:00:39.954Z",
+        "urlPinned": false,
+        "healedCount": 0,
+        "lastOk": false,
+        "lastCode": 503,
+        "lastMs": 898,
+        "lastError": null
+      },
+      "srv-db1ue70m7kps73duvdag": {
+        "enabled": true,
+        "url": "https://razzia-q767.onrender.com",
+        "intervalMin": 10,
+        "state": "degraded",
+        "consecutiveFails": 1,
+        "lastCheckAt": "2026-10-26T23:00:40.425Z",
+        "urlPinned": false,
+        "healedCount": 0,
+        "lastOk": false,
+        "lastCode": 503,
+        "lastMs": 471,
+        "lastError": null
+      }
+    },
     "heals": [],
     "deploys": {},
     "selfPing": {
-      "ok": null,
-      "at": null,
-      "code": null,
-      "ms": null
+      "ok": true,
+      "at": "2026-10-26T23:00:41.452Z",
+      "code": 200,
+      "ms": 1026
     },
-    "persistedAt": null,
-    "lastRunAt": null
+    "persistedAt": "2026-10-26T23:00:41.452Z",
+    "lastRunAt": "2026-10-26T23:00:41.452Z"
   },
   "updatedAt": "2026-10-25T10:20:00.000Z"
 }
