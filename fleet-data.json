@@ -1,16 +1,29 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-25T10:20:00.000Z",
   "config": {
     "strategy": "auto",
+    "warnAtDomainsFree": 0,
+    "placementNotes": [],
     "limits": {
       "customDomainsPerAccount": 2,
       "maxServicesPerAccount": 2,
       "bandwidthGbPerMonth": 5
     },
-    "warnAtBandwidthPct": 80,
-    "warnAtDomainsFree": 0,
-    "placementNotes": []
+    "monitor": {
+      "checkIntervalMin": 10,
+      "failThreshold": 2,
+      "autoHeal": false,
+      "healCooldownMin": 30,
+      "maxHealsPerDay": 6,
+      "autoResume": false
+    },
+    "notify": {
+      "down": true,
+      "up": true,
+      "deployFail": true,
+      "heal": true
+    },
+    "warnAtBandwidthPct": 80
   },
   "projects": {
     "srv-dbesibom7kps73eurkig": {
@@ -38,5 +51,32 @@
       "lastDeploy": "2026-10-14T18:29:46.281Z"
     }
   },
-  "accounts": {}
+  "accounts": {},
+  "tokens": {},
+  "audit": [
+    {
+      "at": "2026-10-26T22:59:20.310Z",
+      "actor": "admin",
+      "ip": "127.0.0.1",
+      "action": "config.update",
+      "detail": {
+        "before": "{\"strategy\":\"auto\",\"warnAtDomainsFree\":0,\"placementNotes\":[],\"limits\":{\"customDomainsPerAccount\":2,\"maxServicesPerAccount\":2,\"bandwidthGbPerMonth\":5},\"monitor\":{\"checkIntervalMin\":10,\"failThreshold\":2,\"autoHeal\":true,\"healCooldownMin\":30,\"maxHealsPerDay\":6,\"autoResume\":false},\"notify\":{\"down\":true,\"up\":true,\"deployFail\":true,\"heal\":true},\"warnAtBandwidthPct\":80}",
+        "after": "{\"strategy\":\"auto\",\"warnAtDomainsFree\":0,\"placementNotes\":[],\"limits\":{\"customDomainsPerAccount\":2,\"maxServicesPerAccount\":2,\"bandwidthGbPerMonth\":5},\"monitor\":{\"checkIntervalMin\":10,\"failThreshold\":2,\"autoHeal\":false,\"healCooldownMin\":30,\"maxHealsPerDay\":6,\"autoResume\":false},\"notify\":{\"down\":true,\"up\":true,\"deployFail\":true,\"heal\":true},\"warnAtBandwidthPct\":80}"
+      }
+    }
+  ],
+  "monitors": {
+    "services": {},
+    "heals": [],
+    "deploys": {},
+    "selfPing": {
+      "ok": null,
+      "at": null,
+      "code": null,
+      "ms": null
+    },
+    "persistedAt": null,
+    "lastRunAt": null
+  },
+  "updatedAt": "2026-10-25T10:20:00.000Z"
 }
