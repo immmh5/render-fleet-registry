@@ -16,6 +16,9 @@
 | D8 | القائد (الـ registry نفسه) = حساب #1 `nacho-clump-ounce`، `REGISTRY_ACCOUNT_IDX=1` | مستثنى من `/api/suggest`، ولا يُنشر أبدًا على الحسابات الأخرى |
 | D9 | `version: 3` يُختم على كل كتابة store | تمييز شكل v3 عن v2 عند القراءة المستقبلية |
 | D10 | حساب #4 `acct-d-rhux`: 3 خدمات معلقة (billing) — المراقبة تعلّمها `degraded`، والـ alerts ترفع `critical` | مُلاحَظ ولا يُمس تلقائيًا (autoResume معطل) |
+| D11 | **درس تشغيلي حاسم:** `PUT /v1/services/{id}/env-vars` في Render API **يستبدل المجموعة كاملة** — لا يدمج. كل تعديل env يجب أن يرسل **المجموعة الكاملة** (15 متغيرًا حاليًا). محو المتغيرات عرضيًا = مثيل جديد ينهار قبل `/health` → `update_failed` خلال ~24ث | تسبب في فشل نشرين متتاليين (23:49 و 00:00)؛ سبب `update_failed` الفوري لم يكن الكود بل env المنحوس |
+| D12 | دورة المراقبة تُقرأ **ديناميكيًا من store config** (`config.monitor.checkIntervalMin`، حاليًا 10د) كل جولة بدل ثابت 5د | تعديل الدورة من الـ API يسري دون إعادة نشر؛ `/api/monitors` وboot log يعرضان القيمة الفعلية |
+| D13 | `status` في `/api/fleet` مشتق: `suspended` → `maintenanceStatus` إن وُجد → وإلا `live` | Render API لا يوفر حقل حالة مباشرًا للخدمات الحية؛ v1 كان يعيد `null` |
 
 ## روابط الإنتاج
 

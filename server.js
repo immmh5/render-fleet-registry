@@ -308,7 +308,7 @@ async function accountFleet(account) {
         id: svc.service.id,
         name: svc.service.name,
         type: svc.service.type,
-        status: svc.service.suspended === 'suspended' ? 'suspended' : (sd.maintenanceStatus || null),
+        status: svc.service.suspended === 'suspended' ? 'suspended' : (sd.maintenanceStatus ? String(sd.maintenanceStatus) : 'live'),
         suspended: svc.service.suspended,
         suspenders: svc.service.suspenders || [],
         url: sd.url ? sd.url : null,
@@ -768,6 +768,12 @@ async function selfPing(store) {
 
 let cycleLock = false;
 const lastCycle = { at: null, ms: null, summary: null };
+
+function monitorIntervalMs() {
+  const m = mem && mem.config && mem.config.monitor;
+  const mins = (m && Number(m.checkIntervalMin)) || MONITOR_CYCLE_MS / 60_000;
+  return Math.max(1, mins) * 60_000;
+}
 
 async function monitorCycle(manual, cycleCount = 0) {
   if (cycleLock) return { skipped: 'a cycle is already running' };
@@ -1411,7 +1417,7 @@ route('GET', '/api/monitors', ['read'], 'حالة محرك المراقبة ال
     services,
     heals: (store.monitors && store.monitors.heals) || [],
     selfPing: (store.monitors && store.monitors.selfPing) || null,
-    cycle: { intervalMin: MONITOR_CYCLE_MS / 60_000, running: cycleLock, lastRunAt: lastCycle.at, lastRunMs: lastCycle.ms, lastResult: lastCycle.summary },
+    cycle: { intervalMin: monitorIntervalMs() / 60_000, running: cycleLock, lastRunAt: lastCycle.at, lastRunMs: lastCycle.ms, lastResult: lastCycle.summary },
   });
 });
 
@@ -1643,13 +1649,17 @@ let cycleCount = 0;
   }
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`[render-fleet] v${VERSION} listening on :${PORT}`);
-    console.log(`[render-fleet] GET /health | GET /ready | GET /api/docs (Bearer key) | routes: ${ROUTES.length} | monitors cycle: every ${MONITOR_CYCLE_MS / 60_000} min`);
+    console.log(`[render-fleet] GET /health | GET /ready | GET /api/docs (Bearer key) | routes: ${ROUTES.length} | monitors cycle: every ${monitorIntervalMs() / 60_000} min (config)`);
   });
   setTimeout(() => {
     monitorCycle(false, 0).catch(e => console.error('[monitors] first cycle failed:', e.message));
   }, 15_000);
-  setInterval(() => {
-    cycleCount++;
-    monitorCycle(false, cycleCount).catch(e => console.error('[monitors] cycle failed:', e.message));
-  }, MONITOR_CYCLE_MS).unref();
+  (function scheduleMonitors() {
+    setTimeout(() => {
+      cycleCount++;
+      monitorCycle(false, cycleCount)
+        .catch(e => console.error('[monitors] cycle failed:', e.message))
+        .finally(() => { if (!process.exitCode) scheduleMonitors(); });
+    }, monitorIntervalMs()).unref();
+  })();
 })();
